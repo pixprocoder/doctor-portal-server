@@ -1,6 +1,7 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
@@ -10,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jfjpd.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jfjpd.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -19,14 +20,14 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const serviceCollection = client.db("Services").collection("Service");
+    const appointmentCollection = client
+      .db("AppointmentServices")
+      .collection("service");
 
-    //Load all data
+    // LOAD ALL APPOINTMENT DATA
     app.get("/service", async (req, res) => {
       const query = {};
-      const service = await serviceCollection.find(query);
-      console.log(service);
-      const result = service.toArray();
+      const result = await appointmentCollection.find(query).toArray();
       res.send(result);
     });
   } finally {
@@ -34,6 +35,7 @@ async function run() {
 }
 run().catch(console.dir);
 
+//ROOT API
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
